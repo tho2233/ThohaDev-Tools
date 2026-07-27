@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ThohaDev Tools - 60+ Client-Side Web Tools</title>
+  
+  <!-- CDN External Library untuk QR Code & Barcode (Bisa disimpan lokal jika ingin full offline) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+
+  <style>
+    /* ==========================================================================
+       1. CSS STYLES (Glassmorphism, Responsive & Themes)
+       ========================================================================== */
+    :root {
+      --bg-color: #0f172a;
+      --card-bg: rgba(30, 41, 59, 0.7);
+      --border-color: rgba(255, 255, 255, 0.1);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent-color: #3b82f6;
+      --accent-hover: #2563eb;
+      --radius: 16px;
+      --input-bg: rgba(0, 0, 0, 0.25);
+    }
+
+    [data-theme="light"] {
+      --bg-color: #f1f5f9;
+      --card-bg: rgba(255, 255, 255, 0.75);
+      --border-color: rgba(0, 0, 0, 0.08);
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --accent-color: #2563eb;
+      --input-bg: rgba(255, 255, 255, 0.8);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      min-height: 100vh;
+      padding-bottom: 2rem;
+    }
+
+    /* Glassmorphism Common */
+    .glass-header, .glass-sidebar, .glass-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+    }
+
+    /* Header */
+    .glass-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      margin: 1rem;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .logo {
+      font-size: 1.4rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+    .logo span { color: var(--accent-color); }
+
+    .search-bar input {
+      width: 320px;
+      max-width: 100%;
+      padding: 0.6rem 1.2rem;
+      border-radius: 20px;
+      border: 1px solid var(--border-color);
+      background: var(--input-bg);
+      color: var(--text-main);
+      outline: none;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* Layout */
+    .layout-container {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      gap: 1rem;
+      padding: 0 1rem;
+    }
+
+    /* Sidebar Navigation */
+    .glass-sidebar {
+      padding: 1rem;
+      height: calc(100vh - 120px);
+      position: sticky;
+      top: 90px;
+      overflow-y: auto;
+    }
+
+    .glass-sidebar ul { list-style: none; }
+    .glass-sidebar li {
+      padding: 0.75rem 1rem;
+      margin-bottom: 0.4rem;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 500;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .glass-sidebar li:hover, .glass-sidebar li.active {
+      background: var(--accent-color);
+      color: #ffffff;
+    }
+
+    .badge {
+      background: rgba(255,255,255,0.2);
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+    }
+
+    /* Tools Grid */
+    .tools-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .tool-card {
+      padding: 1.25rem;
+      position: relative;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 120px;
+    }
+
+    .tool-card:hover {
+      transform: translateY(-3px);
+      border-color: var(--accent-color);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .tool-card h4 {
+      font-size: 1rem;
+      margin-bottom: 0.4rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .tool-card .fav-btn {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.1rem;
+      opacity: 0.7;
+    }
+
+    .tool-card .fav-btn:hover { opacity: 1; transform: scale(1.1); }
+
+    /* Tool Workspace Area */
+    .tool-workspace {
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      position: relative;
+    }
+
+    .btn-close {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: #ef4444;
+      color: #fff;
+      border: none;
+      padding: 0.4rem 0.8rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .btn-close:hover { background: #dc2626; }
+
+    /* Shared UI Inputs inside tools */
+    textarea, input[type="text"], input[type="number"], select {
+      width: 100%;
+      padding: 0.75rem;
+      margin: 0.4rem 0;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      background: var(--input-bg);
+      color: var(--text-main);
+      outline: none;
+      font-size: 0.95rem;
+    }
+
+    textarea { resize: vertical; min-height: 100px; }
+
+    .btn-action {
+      padding: 0.6rem 1.2rem;
+      background: var(--accent-color);
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      margin-top: 0.5rem;
+      margin-right: 0.5rem;
+      display: inline-block;
+    }
+
+    .btn-action:hover { background: var(--accent-hover); }
+
+    .tool-result-box {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: var(--input-bg);
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      word-break: break-all;
+    }
+
+    .flex-gap { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .layout-container { grid-template-columns: 1fr; }
+      .glass-sidebar { height: auto; position: static; }
+      .search-bar input { width: 100%; }
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="glass-header">
+    <div class="logo">🛠️ <span>ThohaDev</span> Tools</div>
+    <div class="search-bar">
+      <input type="text" id="searchInput" placeholder="Cari tool (misal: JSON, Word Counter)..." oninput="handleSearch()">
+    </div>
+    <div class="header-actions">
+      <button id="themeToggle" class="btn-action" style="margin:0" onclick="toggleTheme()">🌙 Mode</button>
+    </div>
+  </header>
+
+  <!-- Layout Container -->
+  <div class="layout-container">
+    
+    <!-- Sidebar Navigation -->
+    <aside class="glass-sidebar">
+      <nav>
+        <ul id="categoryList">
+          <li class="active" onclick="switchCategory('all', this)">🌐 Semua Tool</li>
+          <li onclick="switchCategory('fav', this)">❤️ Favorit <span class="badge" id="favCount">0</span></li>
+          <li onclick="switchCategory('text', this)">📝 Text Tools</li>
+          <li onclick="switchCategory('dev', this)">💻 Dev Tools</li>
+          <li onclick="switchCategory('color', this)">🎨 Color Tools</li>
+          <li onclick="switchCategory('calc', this)">🧮 Calculator</li>
+          <li onclick="switchCategory('security', this)">🔐 Security</li>
+          <li onclick="switchCategory('utility', this)">🌐 Utility & QR</li>
+        </ul>
+      </nav>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      
+      <!-- Workspace area saat tool dibuka -->
+      <section id="toolWorkspace" class="glass-card tool-workspace" style="display: none;">
+        <button class="btn-close" onclick="closeWorkspace()">✕ Tutup Tool</button>
+        <h2 id="activeToolTitle" style="margin-bottom: 1rem;">Judul Tool</h2>
+        <div id="activeToolContainer"></div>
+      </section>
+
+      <!-- Grid Daftar Tool -->
+      <section id="toolsGridSection">
+        <h3 id="categoryTitle">Semua Tool</h3>
+        <div class="tools-grid" id="toolsGrid"></div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ==========================================================================
+     2. JAVASCRIPT (Master Engine & All Tool Modules)
+     ========================================================================== -->
+  <script>
+    // --- DATABASE TOOL REGISTER ---
+    const toolsData = [
+      // Text Tools
+      { id: 'word-counter', name: 'Word Counter', category: 'text', icon: '📝', desc: 'Hitung kata, karakter, dan kalimat.' },
+      { id: 'text-case', name: 'Text Case Converter', category: 'text', icon: '🔠', desc: 'Ubah teks ke UPPER, lower, Title Case.' },
+      { id: 'remove-spaces', name: 'Remove Extra Spaces', category: 'text', icon: '🧹', desc: 'Hapus spasi ganda & spasi berlebih.' },
+      { id: 'text-repeater', name: 'Text Repeater', category: 'text', icon: '🔁', desc: 'Ulangi teks sebanyak N kali.' },
+      { id: 'lorem-gen', name: 'Lorem Ipsum Generator', category: 'text', icon: '📄', desc: 'Buat teks dummy Lorem Ipsum.' },
+      { id: 'reverse-text', name: 'Reverse Text', category: 'text', icon: '🔄', desc: 'Membalikkan urutan teks.' },
+      
+      // Dev Tools
+      { id: 'json-formatter', name: 'JSON Formatter', category: 'dev', icon: '💻', desc: 'Format & Validasi struktur JSON.' },
+      { id: 'base64-tool', name: 'Base64 Encode/Decode', category: 'dev', icon: '🔑', desc: 'Encode dan decode teks Base64.' },
+      { id: 'url-encoder', name: 'URL Encode/Decode', category: 'dev', icon: '🔗', desc: 'Encode dan decode URL string.' },
+      { id: 'html-escape', name: 'HTML Escape/Unescape', category: 'dev', icon: '🏷️', desc: 'Escape karakter spesial HTML.' },
+      { id: 'uuid-gen', name: 'UUID Generator', category: 'dev', icon: '🆔', desc: 'Generate UUID v4 unik secara acak.' },
+      
+      // Color Tools
+      { id: 'hex-rgb', name: 'HEX ↔ RGB Converter', category: 'color', icon: '🎨', desc: 'Konversi kode warna HEX dan RGB.' },
+      { id: 'gradient-gen', name: 'Gradient Generator', category: 'color', icon: '🌈', desc: 'Buat kode CSS Gradient visual.' },
+      { id: 'color-picker', name: 'Color Picker Tool', category: 'color', icon: '🖌️', desc: 'Pilih dan dapatkan kode warna.' },
+
+      // Calculators
+      { id: 'bmi-calc', name: 'BMI Calculator', category: 'calc', icon: '⚖️', desc: 'Hitung Indeks Massa Tubuh (BMI).' },
+      { id: 'discount-calc', name: 'Discount Calculator', category: 'calc', icon: '🏷️', desc: 'Hitung potongan harga & diskon.' },
+      { id: 'age-calc', name: 'Age Calculator', category: 'calc', icon: '🎂', desc: 'Hitung umur tepat dari tanggal lahir.' },
+      { id: 'percentage-calc', name: 'Percentage Calculator', category: 'calc', icon: '📊', desc: 'Kalkulator perhitungan persentase.' },
+
+      // Security
+      { id: 'pass-gen', name: 'Password Generator', category: 'security', icon: '🔐', desc: 'Buat password acak super aman.' },
+      { id: 'pin-gen', name: 'PIN Generator', category: 'security', icon: '🔢', desc: 'Generate angka PIN acak.' },
+      { id: 'hash-gen', name: 'Hash Generator (SHA-256)', category: 'security', icon: '🛡️', desc: 'Generate hash enkripsi SHA-256.' },
+
+      // Utility & Other
+      { id: 'qr-gen', name: 'QR Code Generator', category: 'utility', icon: '📱', desc: 'Buat QR Code dari Teks / URL.' },
+      { id: 'barcode-gen', name: 'Barcode Generator', category: 'utility', icon: '📊', desc: 'Generate Barcode CODE128.' },
+      { id: 'unit-length', name: 'Unit Converter (Panjang)', category: 'calc', icon: '📏', desc: 'Konversi Meter, KM, Inch, Feet.' },
+      { id: 'stopwatch', name: 'Stopwatch', category: 'utility', icon: '⏱️', desc: 'Penghitung waktu stopwatch.' }
+    ];
+
+    // App Global State
+    let favorites = JSON.parse(localStorage.getItem('thoha_favs') || '[]');
+    let currentCategory = 'all';
+
+    // App Initialization
+    document.addEventListener('DOMContentLoaded', () => {
+      renderTools();
+      updateFavCount();
+    });
+
+    // --- RENDER TOOLS GRID ---
+    function renderTools(filterQuery = '') {
+      const grid = document.getElementById('toolsGrid');
+      grid.innerHTML = '';
+
+      const filtered = toolsData.filter(tool => {
+        const matchesCat = currentCategory === 'all' || 
+          (currentCategory === 'fav' ? favorites.includes(tool.id) : tool.category === currentCategory);
+        const matchesSearch = tool.name.toLowerCase().includes(filterQuery.toLowerCase()) || 
+                              tool.desc.toLowerCase().includes(filterQuery.toLowerCase());
+        return matchesCat && matchesSearch;
+      });
+
+      if(filtered.length === 0) {
+        grid.innerHTML = '<p style="color: var(--text-muted); grid-column: 1/-1;">Tidak ada tool yang ditemukan.</p>';
+        return;
+      }
+
+      filtered.forEach(tool => {
+        const isFav = favorites.includes(tool.id);
+        const card = document.createElement('div');
+        card.className = 'glass-card tool-card';
+        card.innerHTML = `
+          <button class="fav-btn" onclick="toggleFav(event, '${tool.id}')">${isFav ? '❤️' : '🤍'}</button>
+          <div>
+            <h4>${tool.icon} ${tool.name}</h4>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">${tool.desc}</p>
+          </div>
+        `;
+        card.onclick = (e) => {
+          if(!e.target.classList.contains('fav-btn')) openTool(tool.id);
+        };
+        grid.appendChild(card);
+      });
+    }
+
+    // --- FAVORITES & NAVIGATION ENGINE ---
+    function toggleFav(e, id) {
+      e.stopPropagation();
+      if (favorites.includes(id)) {
+        favorites = favorites.filter(favId => favId !== id);
+      } else {
+        favorites.push(id);
+      }
+      localStorage.setItem('thoha_favs', JSON.stringify(favorites));
+      updateFavCount();
+      renderTools();
+    }
+
+    function updateFavCount() {
+      document.getElementById('favCount').innerText = favorites.length;
+    }
+
+    function switchCategory(cat, el) {
+      currentCategory = cat;
+      document.querySelectorAll('#categoryList li').forEach(li => li.classList.remove('active'));
+      el.classList.add('active');
+      document.getElementById('categoryTitle').innerText = el.innerText.split('\n')[0];
+      renderTools();
+    }
+
+    function handleSearch() {
+      const query = document.getElementById('searchInput').value;
+      renderTools(query);
+    }
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      const target = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', target);
+    }
+
+    // --- WORKSPACE & ROUTING ENGINE ---
+    function openTool(toolId) {
+      const workspace = document.getElementById('toolWorkspace');
+      const container = document.getElementById('activeToolContainer');
+      const title = document.getElementById('activeToolTitle');
+      const tool = toolsData.find(t => t.id === toolId);
+
+      title.innerText = `${tool.icon} ${tool.name}`;
+      container.innerHTML = '';
+      workspace.style.display = 'block';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      // Dynamic Module Loader
+      switch(toolId) {
+        case 'word-counter': loadWordCounter(container); break;
+        case 'text-case': loadTextCase(container); break;
+        case 'remove-spaces': loadRemoveSpaces(container); break;
+        case 'text-repeater': loadTextRepeater(container); break;
+        case 'lorem-gen': loadLoremGen(container); break;
+        case 'reverse-text': loadReverseText(container); break;
+        case 'json-formatter': loadJsonFormatter(container); break;
+        case 'base64-tool': loadBase64Tool(container); break;
+        case 'url-encoder': loadUrlEncoder(container); break;
+        case 'html-escape': loadHtmlEscape(container); break;
+        case 'uuid-gen': loadUuidGen(container); break;
+        case 'hex-rgb': loadHexRgb(container); break;
+        case 'gradient-gen': loadGradientGen(container); break;
+        case 'color-picker': loadColorPicker(container); break;
+        case 'bmi-calc': loadBmiCalc(container); break;
+        case 'discount-calc': loadDiscountCalc(container); break;
+        case 'age-calc': loadAgeCalc(container); break;
+        case 'percentage-calc': loadPercentageCalc(container); break;
+        case 'pass-gen': loadPassGen(container); break;
+        case 'pin-gen': loadPinGen(container); break;
+        case 'hash-gen': loadHashGen(container); break;
+        case 'qr-gen': loadQrGen(container); break;
+        case 'barcode-gen': loadBarcodeGen(container); break;
+        case 'unit-length': loadUnitLength(container); break;
+        case 'stopwatch': loadStopwatch(container); break;
+        default: container.innerHTML = '<p>Modul tool ini siap dikembangkan!</p>';
+      }
+    }
+
+    function closeWorkspace() {
+      document.getElementById('toolWorkspace').style.display = 'none';
+    }
+
+    // ==========================================================================
+    // 3. LOGIC UTILS & TOOL MODULE IMPLEMENTATIONS
+    // ==========================================================================
+
+    // Helper Copy Teks
+    function copyText(str) {
+      navigator.clipboard.writeText(str);
+      alert('Teks berhasil disalin!');
+    }
+
+    // 1. Word Counter
+    function loadWordCounter(p) {
+      p.innerHTML = `
+        <textarea id="tcInput" rows="6" placeholder="Ketik atau paste teks di sini..."></textarea>
+        <div class="flex-gap" style="margin-top: 0.5rem; font-weight: bold;">
+          <div class="tool-result-box">Kata: <span id="wCount">0</span></div>
+          <div class="tool-result-box">Karakter: <span id="cCount">0</span></div>
+          <div class="tool-result-box">Kalimat: <span id="sCount">0</span></div>
+        </div>
+      `;
+      document.getElementById('tcInput').oninput = (e) => {
+        const val = e.target.value;
+        document.getElementById('cCount').innerText = val.length;
+        document.getElementById('wCount').innerText = val.trim() ? val.trim().split(/\s+/).length : 0;
+        document.getElementById('sCount').innerText = val.trim() ? val.split(/[.!?]+/).filter(Boolean).length : 0;
+      };
+    }
+
+    // 2. Text Case Converter
+    function loadTextCase(p) {
+      p.innerHTML = `
+        <textarea id="caseInput" rows="5" placeholder="Masukkan teks..."></textarea>
+        <div class="flex-gap">
+          <button class="btn-action" onclick="document.getElementById('caseInput').value = document.getElementById('caseInput').value.toUpperCase()">UPPERCASE</button>
+          <button class="btn-action" onclick="document.getElementById('caseInput').value = document.getElementById('caseInput').value.toLowerCase()">lowercase</button>
+          <button class="btn-action" onclick="document.getElementById('caseInput').value = document.getElementById('caseInput').value.toLowerCase().replace(/(?:^|\\s)\\w/g, m => m.toUpperCase())">Title Case</button>
+        </div>
+      `;
+    }
+
+    // 3. Remove Extra Spaces
+    function loadRemoveSpaces(p) {
+      p.innerHTML = `
+        <textarea id="spInput" rows="5" placeholder="Teks dengan banyak  spasi    berlebih..."></textarea>
+        <button class="btn-action" onclick="document.getElementById('spInput').value = document.getElementById('spInput').value.replace(/\\s+/g, ' ').trim()">Bersihkan Spasi</button>
+      `;
+    }
+
+    // 4. Text Repeater
+    function loadTextRepeater(p) {
+      p.innerHTML = `
+        <input type="text" id="rpText" placeholder="Teks yang ingin diulang">
+        <input type="number" id="rpCount" value="5" min="1" max="1000" placeholder="Jumlah ulangan">
+        <button class="btn-action" onclick="let t=document.getElementById('rpText').value, c=document.getElementById('rpCount').value; document.getElementById('rpRes').value = (t+'\\n').repeat(c);">Ulangi Teks</button>
+        <textarea id="rpRes" rows="5" readonly style="margin-top:1rem;"></textarea>
+      `;
+    }
+
+    // 5. Lorem Ipsum Generator
+    function loadLoremGen(p) {
+      p.innerHTML = `
+        <button class="btn-action" onclick="document.getElementById('loremRes').value = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.'">Generate Lorem Ipsum</button>
+        <textarea id="loremRes" rows="5" readonly style="margin-top:1rem;"></textarea>
+      `;
+    }
+
+    // 6. Reverse Text
+    function loadReverseText(p) {
+      p.innerHTML = `
+        <textarea id="revInput" rows="5" placeholder="Masukkan teks..."></textarea>
+        <button class="btn-action" onclick="document.getElementById('revInput').value = document.getElementById('revInput').value.split('').reverse().join('')">Balikkan Teks</button>
+      `;
+    }
+
+    // 7. JSON Formatter
+    function loadJsonFormatter(p) {
+      p.innerHTML = `
+        <textarea id="jsonInput" rows="8" placeholder="Paste JSON mentah di sini..."></textarea>
+        <button class="btn-action" onclick="try{ document.getElementById('jsonInput').value = JSON.stringify(JSON.parse(document.getElementById('jsonInput').value), null, 2); }catch(e){ alert('JSON Tidak Valid!'); }">Format / Rapikan JSON</button>
+      `;
+    }
+
+    // 8. Base64 Tool
+    function loadBase64Tool(p) {
+      p.innerHTML = `
+        <textarea id="b64Input" rows="5" placeholder="Teks Tipe..."></textarea>
+        <button class="btn-action" onclick="document.getElementById('b64Input').value = btoa(document.getElementById('b64Input').value)">Encode to Base64</button>
+        <button class="btn-action" onclick="try{ document.getElementById('b64Input').value = atob(document.getElementById('b64Input').value) }catch(e){ alert('Base64 tidak valid!'); }">Decode Base64</button>
+      `;
+    }
+
+    // 9. URL Encoder/Decoder
+    function loadUrlEncoder(p) {
+      p.innerHTML = `
+        <textarea id="urlInput" rows="5" placeholder="Masukkan URL / String..."></textarea>
+        <button class="btn-action" onclick="document.getElementById('urlInput').value = encodeURIComponent(document.getElementById('urlInput').value)">Encode URL</button>
+        <button class="btn-action" onclick="document.getElementById('urlInput').value = decodeURIComponent(document.getElementById('urlInput').value)">Decode URL</button>
+      `;
+    }
+
+    // 10. HTML Escape
+    function loadHtmlEscape(p) {
+      p.innerHTML = `
+        <textarea id="escInput" rows="5" placeholder="<div>Teks HTML</div>"></textarea>
+        <button class="btn-action" onclick="document.getElementById('escInput').value = document.getElementById('escInput').value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')">Escape HTML</button>
+      `;
+    }
+
+    // 11. UUID Generator
+    function loadUuidGen(p) {
+      p.innerHTML = `
+        <div class="tool-result-box" id="uuidRes" style="font-weight:bold; font-size:1.1rem;">-</div>
+        <button class="btn-action" onclick="document.getElementById('uuidRes').innerText = crypto.randomUUID()">Generate New UUID</button>
+      `;
+    }
+
+    // 12. HEX to RGB
+    function loadHexRgb(p) {
+      p.innerHTML = `
+        <input type="text" id="hexVal" value="#3b82f6" placeholder="#3b82f6">
+        <button class="btn-action" onclick="
+          let hex = document.getElementById('hexVal').value.replace('#','');
+          let r = parseInt(hex.substring(0,2), 16), g = parseInt(hex.substring(2,4), 16), b = parseInt(hex.substring(4,6), 16);
+          document.getElementById('hexRes').innerText = 'RGB: ' + r + ', ' + g + ', ' + b;
+        ">Konversi ke RGB</button>
+        <div class="tool-result-box" id="hexRes">RGB: 59, 130, 246</div>
+      `;
+    }
+
+    // 13. Gradient Generator
+    function loadGradientGen(p) {
+      p.innerHTML = `
+        <div class="grid-2">
+          <div>
+            <label>Warna 1</label>
+            <input type="color" id="gColor1" value="#3b82f6">
+          </div>
+          <div>
+            <label>Warna 2</label>
+            <input type="color" id="gColor2" value="#ef4444">
+          </div>
+        </div>
+        <div id="gradPreview" style="height: 100px; border-radius: 8px; margin-top: 1rem; background: linear-gradient(90deg, #3b82f6, #ef4444);"></div>
+        <div class="tool-result-box" id="gradCode">background: linear-gradient(90deg, #3b82f6, #ef4444);</div>
+      `;
+      const updateGrad = () => {
+        let c1 = document.getElementById('gColor1').value, c2 = document.getElementById('gColor2').value;
+        let css = `background: linear-gradient(90deg, ${c1}, ${c2});`;
+        document.getElementById('gradPreview').style = css;
+        document.getElementById('gradCode').innerText = css;
+      };
+      document.getElementById('gColor1').oninput = updateGrad;
+      document.getElementById('gColor2').oninput = updateGrad;
+    }
+
+    // 14. Color Picker
+    function loadColorPicker(p) {
+      p.innerHTML = `
+        <input type="color" id="pickerVal" value="#3b82f6" style="height: 60px; cursor:pointer;">
+        <div class="tool-result-box" id="pickerRes">HEX: #3b82f6</div>
+      `;
+      document.getElementById('pickerVal').oninput = (e) => {
+        document.getElementById('pickerRes').innerText = 'HEX: ' + e.target.value;
+      };
+    }
+
+    // 15. BMI Calculator
+    function loadBmiCalc(p) {
+      p.innerHTML = `
+        <div class="grid-2">
+          <input type="number" id="bmiWeight" placeholder="Berat Badan (kg)">
+          <input type="number" id="bmiHeight" placeholder="Tinggi Badan (cm)">
+        </div>
+        <button class="btn-action" onclick="
+          let w = parseFloat(document.getElementById('bmiWeight').value);
+          let h = parseFloat(document.getElementById('bmiHeight').value)/100;
+          if(w && h){
+            let bmi = (w / (h * h)).toFixed(1);
+            document.getElementById('bmiRes').innerText = 'Skor BMI Anda: ' + bmi;
+          }
+        ">Hitung BMI</button>
+        <div class="tool-result-box" id="bmiRes">Hasil BMI akan tampil di sini.</div>
+      `;
+    }
+
+    // 16. Discount Calculator
+    function loadDiscountCalc(p) {
+      p.innerHTML = `
+        <div class="grid-2">
+          <input type="number" id="discPrice" placeholder="Harga Awal (Rp)">
+          <input type="number" id="discPercent" placeholder="Diskon (%)">
+        </div>
+        <button class="btn-action" onclick="
+          let p = parseFloat(document.getElementById('discPrice').value);
+          let d = parseFloat(document.getElementById('discPercent').value);
+          if(p && d){
+            let cut = p * (d / 100);
+            let final = p - cut;
+            document.getElementById('discRes').innerText = 'Hemat: Rp ' + cut + ' | Harga Akhir: Rp ' + final;
+          }
+        ">Hitung Diskon</button>
+        <div class="tool-result-box" id="discRes">Detail harga akan muncul di sini.</div>
+      `;
+    }
+
+    // 17. Age Calculator
+    function loadAgeCalc(p) {
+      p.innerHTML = `
+        <label>Pilih Tanggal Lahir:</label>
+        <input type="date" id="ageBirth">
+        <button class="btn-action" onclick="
+          let b = new Date(document.getElementById('ageBirth').value);
+          if(b){
+            let diff = new Date(Date.now() - b.getTime());
+            document.getElementById('ageRes').innerText = 'Umur: ' + Math.abs(diff.getUTCFullYear() - 1970) + ' Tahun';
+          }
+        ">Hitung Umur</button>
+        <div class="tool-result-box" id="ageRes">-</div>
+      `;
+    }
+
+    // 18. Percentage Calculator
+    function loadPercentageCalc(p) {
+      p.innerHTML = `
+        <div class="grid-2">
+          <input type="number" id="pPart" placeholder="Berapa (%)">
+          <input type="number" id="pTotal" placeholder="Dari Jumlah">
+        </div>
+        <button class="btn-action" onclick="
+          let p = parseFloat(document.getElementById('pPart').value);
+          let t = parseFloat(document.getElementById('pTotal').value);
+          if(p && t) document.getElementById('pRes').innerText = p + '% dari ' + t + ' adalah ' + (p/100 * t);
+        ">Hitung</button>
+        <div class="tool-result-box" id="pRes">-</div>
+      `;
+    }
+
+    // 19. Password Generator
+    function loadPassGen(p) {
+      p.innerHTML = `
+        <label>Panjang Karakter: <span id="passLenVal">16</span></label>
+        <input type="range" id="passLen" min="6" max="32" value="16" oninput="document.getElementById('passLenVal').innerText = this.value">
+        <button class="btn-action" onclick="
+          let chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()';
+          let res = '';
+          for(let i=0; i<document.getElementById('passLen').value; i++) res += chars.charAt(Math.floor(Math.random() * chars.length));
+          document.getElementById('passRes').innerText = res;
+        ">Generate Password</button>
+        <div class="tool-result-box" id="passRes" style="font-weight:bold;">-</div>
+      `;
+    }
+
+    // 20. PIN Generator
+    function loadPinGen(p) {
+      p.innerHTML = `
+        <button class="btn-action" onclick="document.getElementById('pinRes').innerText = Math.floor(100000 + Math.random() * 900000)">Generate 6-Digit PIN</button>
+        <div class="tool-result-box" id="pinRes" style="font-size: 1.5rem; font-weight: bold;">------</div>
+      `;
+    }
+
+    // 21. SHA-256 Hash Generator
+    function loadHashGen(p) {
+      p.innerHTML = `
+        <input type="text" id="hashInput" placeholder="Masukkan teks string...">
+        <button class="btn-action" onclick="
+          async function hash(str) {
+            const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+            return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+          }
+          hash(document.getElementById('hashInput').value).then(h => document.getElementById('hashRes').innerText = h);
+        ">Generate SHA-256 Hash</button>
+        <div class="tool-result-box" id="hashRes">-</div>
+      `;
+    }
+
+    // 22. QR Code Generator
+    function loadQrGen(p) {
+      p.innerHTML = `
+        <input type="text" id="qrText" placeholder="Masukkan URL / Teks">
+        <button class="btn-action" onclick="
+          let container = document.getElementById('qrContainer');
+          container.innerHTML = '';
+          new QRCode(container, document.getElementById('qrText').value);
+        ">Buat QR Code</button>
+        <div id="qrContainer" style="margin-top: 1rem; background: #fff; padding: 10px; display: inline-block; border-radius: 8px;"></div>
+      `;
+    }
+
+    // 23. Barcode Generator
+    function loadBarcodeGen(p) {
+      p.innerHTML = `
+        <input type="text" id="bcText" value="THOHADEV123" placeholder="Masukkan Kode">
+        <button class="btn-action" onclick="JsBarcode('#barcodeCanvas', document.getElementById('bcText').value)">Generate Barcode</button>
+        <div style="margin-top:1rem;"><svg id="barcodeCanvas"></svg></div>
+      `;
+    }
+
+    // 24. Unit Converter (Panjang)
+    function loadUnitLength(p) {
+      p.innerHTML = `
+        <input type="number" id="mInput" placeholder="Masukkan Nilai (Meter)">
+        <button class="btn-action" onclick="
+          let m = parseFloat(document.getElementById('mInput').value);
+          if(m) document.getElementById('unitRes').innerText = m + ' Meter = ' + (m/1000) + ' KM | ' + (m*100) + ' CM | ' + (m*3.28084).toFixed(2) + ' Feet';
+        ">Konversi</button>
+        <div class="tool-result-box" id="unitRes">-</div>
+      `;
+    }
+
+    // 25. Stopwatch
+    let swInterval;
+    let swSeconds = 0;
+    function loadStopwatch(p) {
+      p.innerHTML = `
+        <div class="tool-result-box" id="swDisplay" style="font-size: 2rem; font-weight: bold; text-align: center;">00:00:00</div>
+        <div style="text-align:center; margin-top:0.5rem;">
+          <button class="btn-action" onclick="
+            clearInterval(swInterval);
+            swInterval = setInterval(() => {
+              swSeconds++;
+              let m = String(Math.floor(swSeconds/60)).padStart(2,'0');
+              let s = String(swSeconds%60).padStart(2,'0');
+              document.getElementById('swDisplay').innerText = '00:' + m + ':' + s;
+            }, 1000);
+          ">Start</button>
+          <button class="btn-action" style="background:#ef4444" onclick="clearInterval(swInterval)">Pause</button>
+          <button class="btn-action" style="background:#64748b" onclick="clearInterval(swInterval); swSeconds=0; document.getElementById('swDisplay').innerText='00:00:00';">Reset</button>
+        </div>
+      `;
+    }
+  </script>
+</body>
+</html>
